@@ -1,0 +1,87 @@
+#include <DHT.h>
+#include <Arduino.h>
+
+
+// Define the GPIO pin connected to the TEMP  sensor.
+DHT  dht(26, DHT11);
+// Define the GPIO pins connected to the LEDs.
+const int RED_LED_PIN = 12;
+const int YELLOW_LED_PIN = 13;
+
+
+// Define the GPIO pin connected to the PIR motion sensor.
+const int PIR_PIN = 25;
+
+
+// Define the GPIO pin connected to the LED.
+const int LED_PIN = 33;
+
+
+void setup() {
+  // put your setup code here, to run once:
+   //humdity and temp sensors 
+
+  dht.begin();
+  delay(2000);
+
+
+  Serial.begin(115200);
+
+  // Set LED pins as outputs for DHT11
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(YELLOW_LED_PIN, OUTPUT);
+
+// Motion Sensor
+// Set the PIR motion sensor pin as an input.
+  pinMode(PIR_PIN, INPUT);
+
+  // Set the LED pin as an output.
+  pinMode(LED_PIN, OUTPUT);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  if (isnan(temp)) {
+    Serial.println("Failed to read temperature from DHT sensor");
+    return;
+  }
+
+  Serial.print("Temp: ");
+  Serial.print(temp);
+  Serial.print(" C ");
+  Serial.print("Humidity: "); 
+  Serial.print(humidity);
+  Serial.println(" % ");
+
+  if (temp > 25) {
+    digitalWrite(RED_LED_PIN, HIGH);   // Turn on red LED
+    digitalWrite(YELLOW_LED_PIN, LOW); // Turn off yellow LED
+  } else if (temp < 25) {
+    digitalWrite(RED_LED_PIN, LOW);    // Turn off red LED
+    digitalWrite(YELLOW_LED_PIN, HIGH); // Turn on yellow LED
+  } else {
+    digitalWrite(RED_LED_PIN, LOW);    // Turn off red LED
+    digitalWrite(YELLOW_LED_PIN, LOW);  // Turn off yellow LED
+  }
+
+  delay(2000);
+
+// LED+PIR
+// Read the value of the PIR motion sensor pin.
+  int motion = digitalRead(PIR_PIN);
+
+  if (motion == HIGH) {
+    Serial.println("Motion Detected ");
+    digitalWrite(LED_PIN, HIGH);
+  }
+  // If there is no motion, turn off the LED.
+  else {
+    Serial.println("Motion Not Detected ");
+    digitalWrite(LED_PIN, LOW);
+  }
+  delay(10);
+}
